@@ -6,8 +6,8 @@ const userRoutes = require('./routes/userRoutes');
 const newsRouter = require('./routes/newsRouter');
 
 app.use(express.json());
-app.use('/auth',authRoutes);
-app.use('/user',userRoutes);
+app.use('/users',authRoutes);
+app.use('/users',userRoutes);
 app.use('/news',newsRouter);
 
 app.listen(PORT, (err) => {

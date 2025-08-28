@@ -7,8 +7,8 @@ const {user} = require('../dataStore');
 const {body, validationResult} = require('express-validator');
 // const user = [];
 
-router.post('/register',
-    [body('username').isEmail().withMessage('Username must be a valid email'),
+router.post('/signup',
+    [body('email').isEmail().withMessage('Email must be a valid'),
         body('password').isLength({ min: 5 }).withMessage('Password must be at least 5 chars long')
     ],
     async (req,res) => {
@@ -17,9 +17,9 @@ router.post('/register',
             return res.status(400).json({errors : errors.array()});
         }
     try{
-        const { username, password } = req.body;
+        const { email, password, preferences } = req.body;
         const hashedPassword = await bcrypt.hash(password,10);
-        const newUser = {username, password : hashedPassword};
+        const newUser = { email, password: hashedPassword, preferences: preferences || [] };
         user.push(newUser);
         console.log('User registered:', newUser);
         console.log('All users:', user);
@@ -35,10 +35,10 @@ router.post('/register',
 // POST /login - User Login
 router.post('/login', async (req, res) => {
     try {
-        const { username, password } = req.body;
+        const { email, password } = req.body;
 
         // 1. Find the user by username
-        const findUser = user.find(u => u.username === username);
+        const findUser = user.find(u => u.email === email);
         if (!findUser) {
             return res.status(400).send('Cannot find user');
         }
@@ -46,8 +46,8 @@ router.post('/login', async (req, res) => {
         // 2. Compare the provided password with the stored hash
         if (await bcrypt.compare(password, findUser.password)) {
             console.log('Signing token with secret:', JWT_SECRET); // <-- ADD THIS LINE
-            const accessToken = jwt.sign({username : findUser.username}, JWT_SECRET)
-            res.json({accessToken : accessToken});
+            const accessToken = jwt.sign({email : findUser.email}, JWT_SECRET)
+            res.json({token: accessToken});
         } else {
             res.status(401).send('Not Allowed'); // 401 Unauthorized
         }

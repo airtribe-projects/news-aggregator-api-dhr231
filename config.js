@@ -1,4 +1,4 @@
 module.exports = {
     JWT_SECRET: 'your-super-secret-key-that-is-the-same-everywhere',
-    NEW_API_KEY: '2538002255c9d12d8a315ca893b7a677'
+    NEWS_API_KEY: '5d918c28f9364e3196489ea2a663e203'
 };

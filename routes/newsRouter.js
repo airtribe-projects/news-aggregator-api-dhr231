@@ -1,30 +1,44 @@
 const express = require('express');
-const router= express.Router();
+const router = express.Router();
 const authenticateToken = require('../authMiddleware');
 const axios = require('axios');
-const {NEW_API_KEY} = require('../config');
-const { userPreferences } = require("../dataStore");
+const { NEWS_API_KEY } = require('../config');
 
-router.get('/', authenticateToken, async (req,res) => {
-    try{
-        const username = req.user.username;
-        const preferences = userPreferences[username];
-        if(!preferences || !preferences.categories || preferences.categories.length === 0){
-            return res.send(400).json({ message:"User has no categories set in preferences."});
+// GET / - Fetch news for the authenticated user
+router.get('/', authenticateToken, async (req, res) => {
+    try {
+        // 1. Get preferences directly from the user object attached by the middleware
+        const preferences = req.tuser.preferences;
+
+        if (!preferences || preferences.length === 0) {
+            return res.status(400).json({ message: "User has no categories set in preferences." });
         }
 
-        const query = preferences.categories.join(' OR ');
-        const encodeQuery = encodeURIComponent(query);
-        const url = `https://gnews.io/api/v4/search?q=${encodeQuery}&token=${NEW_API_KEY}`;
-        console.log(`Fetching news for query: ${query}`); // For debugging
-        const response = await axios.get(url);
-        const articles = response.data.articles;
-        res.json({articles : articles});
-    }
+        // 2. Build the query from the user's preferences
+        const query = preferences[0];
+        const encodedQuery = encodeURIComponent(query);
 
-    catch(error){
-        console.error('Error fetching news :', error);
-        res.status(500).json({message :'Error fetching news'});
+        const url = `https://newsapi.org/v2/everything?q=${encodedQuery}`;
+
+        // const response = await axios.get(url);
+        // const articles = response.data.articles;
+
+        // // 3. Return the news in the shape the test expects
+        // res.json({ news: articles });
+
+        const response = await axios.get(url, {
+            headers: {
+                'Authorization': NEWS_API_KEY
+            }
+        });
+
+        const articles = response.data.articles;
+        res.json({ news: articles });
+
+
+    } catch (error) {
+        console.error('Error fetching news:', error.message);
+        return res.status(500).json({ message: 'Error fetching news' });
     }
 });
 

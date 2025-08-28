@@ -1,7 +1,6 @@
 const user = [];
-const userPreferences = {};
+// const userPreferences = {};
 
 module.exports = {
-    user,
-    userPreferences
+    user
 };
